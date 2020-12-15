@@ -5,7 +5,7 @@ import AVFoundation
 public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDelegate {
   static let iosAudioCategoryKey = "iosAudioCategoryKey"
   static let iosAudioCategoryOptionsKey = "iosAudioCategoryOptionsKey"
-  static let defaultDelay = 3.0
+  static let defaultDelay = 5.0
   
   let synthesizer = AVSpeechSynthesizer()
   var language: String = AVSpeechSynthesisVoice.currentLanguageCode()
@@ -372,13 +372,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   }
   
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-    if shouldDeactivateAndNotifyOthers(audioSession) {
-      do {
-        try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
-      } catch {
-        print(error)
-      }
-    } else if audioSession.category == .playback && audioSession.categoryOptions == AVAudioSession.CategoryOptions(rawValue: 0x00) {
+    if audioSession.category == .playback && audioSession.categoryOptions.contains(.duckOthers) {
       DispatchQueue.main.asyncAfter(deadline: .now() + Self.defaultDelay) { [weak self] in
         guard let self = self else { return }
         if !synthesizer.isSpeaking {
@@ -388,6 +382,12 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
             print(error)
           }
         }
+      }
+    } else if shouldDeactivateAndNotifyOthers(audioSession) {
+      do {
+        try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
+      } catch {
+        print(error)
       }
     }
     if self.awaitSpeakCompletion {
