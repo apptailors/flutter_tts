@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flutter_tts'
-  s.version          = '0.0.1'
+  s.version          = '0.0.2'
   s.summary          = 'A flutter text to speech plugin.'
   s.description      = <<-DESC
 A flutter text to speech plugin
